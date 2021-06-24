@@ -11,6 +11,10 @@ for (const level of ['silly', 'verbose', 'timing', 'notice', 'warn', 'error'])
 const { title, execPath } = process
 
 const RealMockNpm = (t, otherMocks = {}) => {
+  t.afterEach(() => {
+    outputs.length = 0
+    logs.length = 0
+  })
   t.teardown(() => {
     for (const level of ['silly', 'verbose', 'timing', 'notice', 'warn', 'error'])
       npmlog[level] = realLog[level]
@@ -23,6 +27,9 @@ const RealMockNpm = (t, otherMocks = {}) => {
   })
   const logs = []
   const outputs = []
+  const joinedOutput = () => {
+    return outputs.map(o => o.join(' ')).join('\n')
+  }
   const npm = t.mock('../../lib/npm.js', otherMocks)
   const command = async (command, args = []) => {
     return new Promise((resolve, reject) => {
@@ -39,7 +46,7 @@ const RealMockNpm = (t, otherMocks = {}) => {
     }
   }
   npm.output = (...msg) => outputs.push(msg)
-  return { npm, logs, outputs, command }
+  return { npm, logs, outputs, command, joinedOutput }
 }
 
 const realConfig = require('../../lib/utils/config')
